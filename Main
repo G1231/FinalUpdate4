@@ -1,0 +1,155 @@
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import javafx.stage.Modality;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+public class Main extends Application {
+  //array list for logging workouts
+    private List<WorkoutEntry> workoutLog = new ArrayList<>();
+    private TextField durationTextField;
+    private TextField intensityTextField;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+    
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Workout Logger");
+      //list for potential exercises in combobox
+      ObservableList<String> Exercises = FXCollections.observableArrayList(
+        "Running",
+        "Swimming",
+        "Biking",
+        "Walking",
+        "squats",
+        "hiking"
+    );
+
+        // buttons, combobox, and text creation
+        Button logbookButton = new Button("Logbook");
+        Button saveButton = new Button("Save");
+        ComboBox exercises = new ComboBox(Exercises);
+        Button exitButton = new Button("Exit");
+        Button clearButton = new Button("Clear");
+
+        durationTextField = new TextField();
+        durationTextField.setPromptText("Duration (minutes)");
+
+        intensityTextField = new TextField();
+        intensityTextField.setPromptText("Intensity/Distance");
+
+        // Mainwindow layout
+        VBox layout = new VBox(10);
+        layout.getChildren().addAll(logbookButton, saveButton, exercises, durationTextField, intensityTextField, clearButton, exitButton);
+
+        // Creating scene
+        Scene scene = new Scene(layout, 300, 200);
+        primaryStage.setScene(scene);
+
+        // Events
+        logbookButton.setOnAction(event -> openLogbook());
+        saveButton.setOnAction(event -> saveWorkout());
+        clearButton.setOnAction(event -> clearFields());
+        exitButton.setOnAction(event -> primaryStage.close());
+
+        primaryStage.show();
+    }
+
+    private void openLogbook() {
+        //creating stage for logbook
+        Stage logbookStage = new Stage();
+        logbookStage.setTitle("Workout Logbook");
+
+        // Making tables. Took me a while to look this up. the formatting might not be perfect
+        TableView<WorkoutEntry> table = new TableView<>();
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        TableColumn<WorkoutEntry, String> typeColumn = new TableColumn<>("Exercise Type");
+        TableColumn<WorkoutEntry, Integer> durationColumn = new TableColumn<>("Duration (minutes)");
+        TableColumn<WorkoutEntry, String> intensityColumn = new TableColumn<>("Intensity/Distance");
+        TableColumn<WorkoutEntry, String> dateColumn = new TableColumn<>("Date");
+        TableColumn<WorkoutEntry, Double> caloriesColumn = new TableColumn<>("Calories Burned");
+
+        table.getColumns().addAll(typeColumn, durationColumn, intensityColumn, dateColumn, caloriesColumn);
+
+        // Put entries in logbook
+        table.getItems().addAll(workoutLog);
+
+        // Layout for Logbook
+        VBox logbookLayout = new VBox(10);
+        logbookLayout.getChildren().add(table);
+
+        // Creating scene
+        Scene logbookScene = new Scene(logbookLayout, 600, 400);
+        logbookStage.setScene(logbookScene);
+
+        logbookStage.initModality(Modality.APPLICATION_MODAL);
+        logbookStage.show();
+    }
+
+    private void saveWorkout() {
+        try {//save workout. Might not be used in final submission.
+            double durationValue = Double.parseDouble(durationTextField.getText());
+            String intensityValue = intensityTextField.getText();
+            LocalDate currentDate = LocalDate.now();
+
+            // Calories burned
+            double caloriesBurned = calculateCaloriesBurned(durationValue, intensityValue);
+
+            // Create a new workout entry and add it to the log
+            WorkoutEntry entry = new WorkoutEntry("Exercise Type", durationValue, intensityValue, currentDate, caloriesBurned);
+            workoutLog.add(entry);
+
+            // Clear textfields
+            durationTextField.clear();
+            intensityTextField.clear();
+        } catch (NumberFormatException e) {
+            // Alerting if there isn't proper input
+            showAlert("Invalid input. Please enter valid numbers.");
+        }
+    }
+
+
+    private double calculateCaloriesBurned(double duration, String intensity) {
+        //place holder. Going to use the methods in the classes I made instead in final submission
+        return 5.0 * duration; 
+    }
+// function for clear button
+    private void clearFields() {
+        durationTextField.clear();
+        intensityTextField.clear();
+    }
+//show alert function for errors using above code
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+//class for workout entry. This is a placeholder. I implement the actual class when I have time.
+    public class WorkoutEntry {
+        private String type;
+        private double duration;
+        private String intensity;
+        private LocalDate date;
+        private double caloriesBurned;
+
+        public WorkoutEntry(String type, double duration, String intensity, LocalDate date, double caloriesBurned) {
+            this.type = type;
+            this.duration = duration;
+            this.intensity = intensity;
+            this.date = date;
+            this.caloriesBurned = caloriesBurned;
+        }
+    }
+}
